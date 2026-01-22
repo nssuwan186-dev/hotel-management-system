@@ -1,0 +1,24 @@
+services:
+  # 1. ส่วนหน้าเว็บ (Web Interface)
+  - type: web
+    name: vipat-hotel-erp-web
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 web/interface/database_web_interface_new.py
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: PYTHONPATH
+        value: .
+
+  # 2. ส่วนบอท Telegram (Worker)
+  - type: worker
+    name: vipat-hotel-erp-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python3 bot/core/บอทโรงแรมSQLite.py
+    envVars:
+      - key: TELEGRAM_BOT_TOKEN
+        sync: false # คุณต้องไปใส่ Token ในหน้า Dashboard ของ Render เองเพื่อความปลอดภัย
+      - key: PYTHONPATH
+        value: .
