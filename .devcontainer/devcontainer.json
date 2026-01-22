@@ -1,0 +1,17 @@
+{
+    "name": "VIPAT ERP Cloud Environment",
+    "image": "mcr.microsoft.com/vscode/devcontainers/python:3.10",
+    "postCreateCommand": "pip install -r requirements.txt && chmod +x start_erp_system.sh",
+    "customizations": {
+        "vscode": {
+            "extensions": ["ms-python.python"]
+        }
+    },
+    "forwardPorts": [8000],
+    "portsAttributes": {
+        "8000": {
+            "label": "VIPAT ERP Web",
+            "onAutoForward": "openBrowser"
+        }
+    }
+}
