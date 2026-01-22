@@ -4,10 +4,18 @@
 """
 import sqlite3
 import sys
+import datetime
+import random
 
 def เชื่อมต่อฐานข้อมูล():
     """เชื่อมต่อฐานข้อมูล"""
-    return sqlite3.connect('/root/โรงแรม.db')
+    return sqlite3.connect('database/data/โรงแรม.db')
+
+def generate_id(prefix):
+    """สร้าง ID ตามรูปแบบที่กำหนด (e.g., RES-20260122-001)"""
+    today = datetime.datetime.now().strftime("%Y%m%d")
+    random_suffix = "".join([str(random.randint(0, 9)) for _ in range(3)])
+    return f"{prefix}-{today}-{random_suffix}"
 
 def ดูตารางทั้งหมด():
     """ดูรายชื่อตารางทั้งหมด"""

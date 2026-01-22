@@ -8,19 +8,19 @@ import threading
 import time
 import sqlite3
 import json
-from datetime import datetime
+from datetime import datetime, timedelta
+from database.models.booking_engine import create_booking, check_conflict
+from database.models.db_access import เชื่อมต่อฐานข้อมูล
 
 class ระบบจัดการโรงแรมSQLite:
     def __init__(self):
-        self.token = "os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")"
+        self.token = os.getenv("TELEGRAM_BOT_TOKEN", "YOUR_BOT_TOKEN_HERE")
         self.base_url = f"https://api.telegram.org/bot{self.token}"
         self.offset = 0
         self.running = False
         
         # SQLite Database
-        self.db_path = "/root/โรงแรม.db"
-        self.สร้างฐานข้อมูล()
-        self.เพิ่มข้อมูลตัวอย่าง()
+        self.db_path = "database/data/โรงแรม.db"
         
         # User sessions for form input
         self.user_sessions = {}
@@ -165,32 +165,20 @@ class ระบบจัดการโรงแรมSQLite:
             return False
     
     def เมนูหลัก(self):
-        """เมนูหลัก - ปรับปรุงใหม่"""
+        """เมนูหลัก - ปรับปรุงใหม่สำหรับ ERP"""
         return {
             "inline_keyboard": [
                 [
                     {"text": "📊 แดชบอร์ด", "callback_data": "dashboard"},
-                    {"text": "👥 ผู้เข้าพัก", "callback_data": "guests"}
+                    {"text": "💰 การเงิน", "callback_data": "finance"}
                 ],
                 [
                     {"text": "🏠 ห้องพัก", "callback_data": "rooms"},
-                    {"text": "📋 การจอง", "callback_data": "bookings"}
+                    {"text": "📅 การจอง", "callback_data": "bookings"}
                 ],
                 [
-                    {"text": "➕ เพิ่มผู้เข้าพัก", "callback_data": "add_guest"},
-                    {"text": "✏️ แก้ไขข้อมูล", "callback_data": "edit_data"}
-                ],
-                [
-                    {"text": "✅ รายการตรวจสอบ", "callback_data": "checklist"},
-                    {"text": "💡 ข้อเสนอแนะ", "callback_data": "suggestions"}
-                ],
-                [
-                    {"text": "📈 รายงาน", "callback_data": "reports"},
-                    {"text": "💾 สำรองข้อมูล", "callback_data": "backup"}
-                ],
-                [
-                    {"text": "🌐 Web Interface", "callback_data": "web"},
-                    {"text": "ℹ️ ช่วยเหลือ", "callback_data": "help"}
+                    {"text": "➕ จองห้องพัก", "callback_data": "add_guest"},
+                    {"text": "📋 รายงาน", "callback_data": "reports"}
                 ]
             ]
         }
@@ -543,60 +531,95 @@ class ระบบจัดการโรงแรมSQLite:
         self.ส่งข้อความ(chat_id, summary, confirm_keyboard)
     
     def บันทึกผู้เข้าพัก(self, chat_id):
-        """บันทึกข้อมูลผู้เข้าพักลงฐานข้อมูล"""
+        """บันทึกข้อมูลผู้เข้าพักโดยใช้ ERP Booking Engine"""
         session = self.user_sessions.get(chat_id)
         if not session:
             return
         
         data = session["data"]
         
-        try:
-            conn = sqlite3.connect(self.db_path)
-            cursor = conn.cursor()
-            
-            # เพิ่มผู้เข้าพัก
-            cursor.execute('''
-                INSERT INTO ผู้เข้าพัก (ชื่อ, โทรศัพท์, อีเมล, ห้อง, วันเช็คอิน, วันเช็คเอาท์, สถานะ)
-                VALUES (?, ?, ?, ?, ?, ?, 'เข้าพัก')
-            ''', (data['ชื่อ'], data['โทรศัพท์'], data.get('อีเมล'), data['ห้อง'], 
-                  data['วันเช็คอิน'], data['วันเช็คเอาท์']))
-            
-            guest_id = cursor.lastrowid
-            
-            # อัพเดทสถานะห้อง
-            cursor.execute('''
-                UPDATE ห้องพัก 
-                SET สถานะ = 'มีผู้เข้าพัก', รหัสผู้เข้าพัก = ?, วันที่อัพเดท = CURRENT_TIMESTAMP
-                WHERE เลขห้อง = ?
-            ''', (guest_id, data['ห้อง']))
-            
-            conn.commit()
-            conn.close()
-            
+        # เรียกใช้ ERP Engine (เช็ค Conflict + บันทึกบัญชีอัตโนมัติ)
+        result = create_booking(
+            customer_id=f"TG-{chat_id}", 
+            room_number=data['ห้อง'], 
+            check_in=data['วันเช็คอิน'], 
+            check_out=data['วันเช็คเอาท์'], 
+            total_price=session['total_price']
+        )
+        
+        if result["success"]:
             # ลบ session
             del self.user_sessions[chat_id]
             
-            success_msg = f"""✅ <b>เพิ่มผู้เข้าพักสำเร็จ!</b>
+            success_msg = f"""✅ <b>จองสำเร็จ (ระบบ ERP)!</b>
 
-🆔 <b>รหัสผู้เข้าพัก:</b> {guest_id}
+🆔 <b>Booking ID:</b> {result['booking_id']}
 👤 <b>ชื่อ:</b> {data['ชื่อ']}
 🏠 <b>ห้อง:</b> {data['ห้อง']}
-💰 <b>ราคารวม:</b> {session['total_price']:,} บาท
+💰 <b>บันทึกบัญชี:</b> รับเงินมัดจำ {session['total_price']:,} บาท
 
-<b>ข้อมูลถูกบันทึกในฐานข้อมูล SQLite แล้ว</b>"""
+<b>ข้อมูลถูกบันทึกและลงบัญชีแยกประเภทเรียบร้อยแล้ว</b>"""
             
             self.ส่งข้อความ(chat_id, success_msg, self.เมนูหลัก())
-            
-        except Exception as e:
-            self.ส่งข้อความ(chat_id, f"❌ <b>เกิดข้อผิดพลาด:</b> {str(e)}", self.เมนูหลัก())
+        else:
+            self.ส่งข้อความ(chat_id, f"❌ <b>จองไม่สำเร็จ:</b> {result['message']}", self.เมนูหลัก())
             if chat_id in self.user_sessions:
                 del self.user_sessions[chat_id]
     
+    def แสดงรายงานการเงิน(self, chat_id):
+        """แสดงรายงานการเงินสรุปยอดรายได้-ค่าใช้จ่าย"""
+        conn = เชื่อมต่อฐานข้อมูล()
+        cursor = conn.cursor()
+        
+        # 1. ยอดเงินคงเหลือในธนาคาร (1020)
+        cursor.execute("SELECT SUM(debit - credit) FROM Data_JournalEntries WHERE account_code = '1020'")
+        cash_balance = cursor.fetchone()[0] or 0
+        
+        # 2. ยอดรายได้สะสม (หมวด 4)
+        cursor.execute('''
+            SELECT SUM(e.credit - e.debit) 
+            FROM Data_JournalEntries e
+            JOIN Data_ChartOfAccounts c ON e.account_code = c.account_code
+            WHERE c.category = 'Revenue'
+        ''')
+        total_revenue = cursor.fetchone()[0] or 0
+        
+        # 3. ยอดเงินมัดจำค้างจ่าย (Liabilities 2050)
+        cursor.execute("SELECT SUM(credit - debit) FROM Data_JournalEntries WHERE account_code = '2050'")
+        total_deposits = cursor.fetchone()[0] or 0
+        
+        # 4. รายการล่าสุด 5 รายการ
+        cursor.execute('''
+            SELECT j.description, e.debit, e.credit, c.account_name
+            FROM Data_Journal j
+            JOIN Data_JournalEntries e ON j.journal_id = e.journal_id
+            JOIN Data_ChartOfAccounts c ON e.account_code = c.account_code
+            ORDER BY j.transaction_date DESC LIMIT 5
+        ''')
+        recent_entries = cursor.fetchall()
+        
+        conn.close()
+        
+        msg = f"""📊 <b>รายงานการเงิน (Real-time ERP)</b>
+
+💰 <b>ยอดเงินสดในระบบ:</b> {cash_balance:,.2f} ฿
+📥 <b>รายได้สะสม:</b> {total_revenue:,.2f} ฿
+⏳ <b>เงินมัดจำค้างอยู่:</b> {total_deposits:,.2f} ฿
+
+--------------------------------
+📝 <b>รายการบัญชีล่าสุด:</b>\n"""
+        
+        for desc, dr, cr, acc_name in recent_entries:
+            amount = dr if dr > 0 else cr
+            type_label = "Dr" if dr > 0 else "Cr"
+            msg += f"• {desc}\n  └ {acc_name}: {amount:,.0f} ({type_label})\n"
+            
+        self.ส่งข้อความ(chat_id, msg, self.เมนูหลัก())
+
     def จัดการCallback(self, callback_query):
         """จัดการ callback query จากปุ่ม inline"""
         chat_id = callback_query["message"]["chat"]["id"]
         data = callback_query["data"]
-        message_id = callback_query["message"]["message_id"]
         
         # ตอบกลับ callback query
         callback_url = f"{self.base_url}/answerCallbackQuery"
@@ -604,6 +627,8 @@ class ระบบจัดการโรงแรมSQLite:
         
         if data == "dashboard":
             self.แสดงแดชบอร์ด(chat_id)
+        elif data == "finance":
+            self.แสดงรายงานการเงิน(chat_id)
         elif data == "guests":
             self.แสดงรายการผู้เข้าพัก(chat_id)
         elif data == "rooms":
