@@ -10,9 +10,9 @@ from datetime import datetime
 import zipfile
 
 class DatabaseBackup:
-    def __init__(self, db_path="/root/projects/hotel-management/database/data/โรงแรม.db"):
+    def __init__(self, db_path="database/data/โรงแรม.db"):
         self.db_path = db_path
-        self.backup_dir = "/root/projects/hotel-management/backup"
+        self.backup_dir = "database/backups"
         self.ensure_backup_dir()
     
     def ensure_backup_dir(self):
