@@ -1,0 +1,99 @@
+{
+  "guests": [
+    {
+      "id": 1,
+      "name": "นายสมชาย ใจดี",
+      "phone": "081-234-5678",
+      "email": "somchai@email.com",
+      "checkin": "2025-01-20",
+      "checkout": "2025-01-23",
+      "room": "102"
+    },
+    {
+      "id": 2,
+      "name": "นางสาวมาลี สวยงาม",
+      "phone": "082-345-6789",
+      "email": "malee@email.com",
+      "checkin": "2025-01-21",
+      "checkout": "2025-01-25",
+      "room": "301"
+    }
+  ],
+  "rooms": {
+    "101": {
+      "type": "standard",
+      "status": "available",
+      "guest_id": null,
+      "price": 800
+    },
+    "102": {
+      "type": "standard",
+      "status": "occupied",
+      "guest_id": 1,
+      "price": 800
+    },
+    "103": {
+      "type": "standard",
+      "status": "available",
+      "guest_id": null,
+      "price": 800
+    },
+    "201": {
+      "type": "deluxe",
+      "status": "available",
+      "guest_id": null,
+      "price": 1200
+    },
+    "202": {
+      "type": "deluxe",
+      "status": "maintenance",
+      "guest_id": null,
+      "price": 1200
+    },
+    "301": {
+      "type": "suite",
+      "status": "occupied",
+      "guest_id": 2,
+      "price": 2000
+    }
+  },
+  "bookings": [
+    {
+      "id": 1,
+      "guest_id": 1,
+      "room": "102",
+      "checkin": "2025-01-20",
+      "checkout": "2025-01-23",
+      "status": "confirmed",
+      "total": 2400
+    },
+    {
+      "id": 2,
+      "guest_id": 2,
+      "room": "301",
+      "checkin": "2025-01-21",
+      "checkout": "2025-01-25",
+      "status": "confirmed",
+      "total": 8000
+    }
+  ],
+  "payments": [],
+  "staff": [
+    {
+      "id": 1,
+      "name": "นางสาวสุดา",
+      "position": "แม่บ้าน",
+      "shift": "เช้า",
+      "salary": 15000
+    },
+    {
+      "id": 2,
+      "name": "นายสมศักดิ์",
+      "position": "รปภ.",
+      "shift": "กลางคืน",
+      "salary": 18000
+    }
+  ],
+  "services": [],
+  "reports": []
+}

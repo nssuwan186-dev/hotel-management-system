@@ -1,0 +1,198 @@
+{
+  "name": "Hotel Management Bot",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "webhook",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-start",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.message.text}}",
+              "operation": "contains",
+              "value2": "จอง"
+            }
+          ]
+        }
+      },
+      "id": "if-booking",
+      "name": "ตรวจสอบคำสั่งจอง",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.message.text}}",
+              "operation": "contains",
+              "value2": "ค่าไฟ"
+            }
+          ]
+        }
+      },
+      "id": "if-utilities",
+      "name": "ตรวจสอบค่าสาธารณูปโภค",
+      "typeVersion": 1,
+      "position": [460, 500]
+    },
+    {
+      "parameters": {
+        "url": "YOUR_GOOGLE_APPS_SCRIPT_URL",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"generate_id\",\n  \"type\": \"booking\"\n}",
+        "options": {}
+      },
+      "id": "create-booking",
+      "name": "สร้างการจอง",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [680, 200]
+    },
+    {
+      "parameters": {
+        "url": "YOUR_GOOGLE_APPS_SCRIPT_URL",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"action\": \"calculate_utilities\",\n  \"ไฟเก่า\": {{$json.ไฟเก่า}},\n  \"ไฟใหม่\": {{$json.ไฟใหม่}},\n  \"น้ำเก่า\": {{$json.น้ำเก่า}},\n  \"น้ำใหม่\": {{$json.น้ำใหม่}}\n}",
+        "options": {}
+      },
+      "id": "calculate-utilities",
+      "name": "คำนวณค่าไฟน้ำ",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [680, 500]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.message.chat.id}}",
+        "text": "=การจองสำเร็จ!\nรหัสจอง: {{$json.id}}\nกรุณาเก็บรหัสนี้ไว้"
+      },
+      "id": "reply-booking",
+      "name": "ตอบกลับการจอง",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [900, 200]
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json.message.chat.id}}",
+        "text": "=ค่าไฟน้ำประจำเดือน:\n💡 ไฟ: {{$json.data.หน่วยไฟ}} หน่วย = {{$json.data.ค่าไฟ}} บาท\n💧 น้ำ: {{$json.data.หน่วยน้ำ}} หน่วย = {{$json.data.ค่าน้ำ}} บาท\n💰 รวม: {{$json.data.ยอดรวม}} บาท"
+      },
+      "id": "reply-utilities",
+      "name": "ตอบกลับค่าไฟน้ำ",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1,
+      "position": [900, 500]
+    },
+    {
+      "parameters": {
+        "respondWith": "text",
+        "responseBody": "=OK"
+      },
+      "id": "response",
+      "name": "Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1120, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "ตรวจสอบคำสั่งจอง",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "ตรวจสอบค่าสาธารณูปโภค",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรวจสอบคำสั่งจอง": {
+      "main": [
+        [
+          {
+            "node": "สร้างการจอง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตรวจสอบค่าสาธารณูปโภค": {
+      "main": [
+        [
+          {
+            "node": "คำนวณค่าไฟน้ำ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "สร้างการจอง": {
+      "main": [
+        [
+          {
+            "node": "ตอบกลับการจอง",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "คำนวณค่าไฟน้ำ": {
+      "main": [
+        [
+          {
+            "node": "ตอบกลับค่าไฟน้ำ",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตอบกลับการจอง": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ตอบกลับค่าไฟน้ำ": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

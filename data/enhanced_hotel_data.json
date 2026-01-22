@@ -1,0 +1,126 @@
+{
+  "rooms": {
+    "standard": {
+      "price": 800,
+      "rooms": {
+        "101": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        },
+        "102": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        },
+        "103": {
+          "status": "occupied",
+          "guest": "นายสมชาย",
+          "checkin": "2025-01-20",
+          "checkout": "2025-01-23"
+        },
+        "104": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        },
+        "105": {
+          "status": "maintenance",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        },
+        "201": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        },
+        "202": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        },
+        "203": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        },
+        "204": {
+          "status": "occupied",
+          "guest": "นางสาวมาลี",
+          "checkin": "2025-01-21",
+          "checkout": "2025-01-24"
+        },
+        "205": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        }
+      }
+    },
+    "deluxe": {
+      "price": 1200,
+      "rooms": {
+        "301": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        },
+        "302": {
+          "status": "occupied",
+          "guest": "นายจอห์น",
+          "checkin": "2025-01-19",
+          "checkout": "2025-01-25"
+        },
+        "303": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        },
+        "304": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        },
+        "305": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        }
+      }
+    },
+    "suite": {
+      "price": 2000,
+      "rooms": {
+        "401": {
+          "status": "occupied",
+          "guest": "คุณวิภา",
+          "checkin": "2025-01-20",
+          "checkout": "2025-01-26"
+        },
+        "402": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null
+        }
+      }
+    }
+  },
+  "bookings": [],
+  "utilities": {
+    "rate": 4.5
+  },
+  "last_updated": "2026-01-22T02:20:46.456967"
+}

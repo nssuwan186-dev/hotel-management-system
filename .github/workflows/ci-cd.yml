@@ -1,0 +1,105 @@
+name: Hotel Management CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Set up Python 3.11
+      uses: actions/setup-python@v3
+      with:
+        python-version: 3.11
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+    
+    - name: Test database connection
+      run: |
+        python -c "
+        import sqlite3
+        import os
+        
+        # Create test database
+        conn = sqlite3.connect(':memory:')
+        cursor = conn.cursor()
+        
+        # Test table creation
+        cursor.execute('''
+            CREATE TABLE test_table (
+                id INTEGER PRIMARY KEY,
+                name TEXT NOT NULL
+            )
+        ''')
+        
+        cursor.execute('INSERT INTO test_table (name) VALUES (?)', ('Test',))
+        cursor.execute('SELECT * FROM test_table')
+        result = cursor.fetchone()
+        
+        assert result[1] == 'Test'
+        print('✅ Database test passed')
+        
+        conn.close()
+        "
+    
+    - name: Test web interface
+      run: |
+        python -c "
+        import sys
+        sys.path.append('src')
+        
+        # Test imports
+        try:
+            import database_web_interface
+            print('✅ Web interface import successful')
+        except Exception as e:
+            print(f'❌ Web interface import failed: {e}')
+            sys.exit(1)
+        "
+
+  deploy-railway:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Deploy to Railway
+      run: |
+        echo "🚀 Ready for Railway deployment"
+        echo "Add Railway CLI deployment here"
+
+  deploy-web:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Build static web interface
+      run: |
+        mkdir -p dist
+        cp src/database_web_interface.py dist/
+        echo "🌐 Static files ready for deployment"
+    
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./dist

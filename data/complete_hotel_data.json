@@ -1,0 +1,200 @@
+{
+  "hotel_info": {
+    "name": "Grand Hotel",
+    "address": "123 ถนนสุขุมวิท กรุงเทพฯ 10110",
+    "phone": "02-123-4567",
+    "email": "info@grandhotel.com",
+    "tax_id": "0123456789012",
+    "manager": "คุณสมชาย ใจดี"
+  },
+  "rooms": {
+    "standard": {
+      "price": 800,
+      "amenities": [
+        "แอร์",
+        "ทีวี",
+        "ตู้เย็น",
+        "ห้องน้ำในตัว"
+      ],
+      "rooms": {
+        "101": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-15"
+        },
+        "102": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-16"
+        },
+        "103": {
+          "status": "occupied",
+          "guest": "นายสมชาย",
+          "checkin": "2025-01-20",
+          "checkout": "2025-01-23",
+          "last_maintenance": "2025-01-10"
+        },
+        "104": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-17"
+        },
+        "105": {
+          "status": "maintenance",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-22"
+        },
+        "201": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-14"
+        },
+        "202": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-13"
+        },
+        "203": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-18"
+        },
+        "204": {
+          "status": "occupied",
+          "guest": "นางสาวมาลี",
+          "checkin": "2025-01-21",
+          "checkout": "2025-01-24",
+          "last_maintenance": "2025-01-12"
+        },
+        "205": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-19"
+        }
+      }
+    },
+    "deluxe": {
+      "price": 1200,
+      "amenities": [
+        "แอร์",
+        "ทีวี LCD",
+        "ตู้เย็น",
+        "ห้องน้ำในตัว",
+        "ระเบียง",
+        "เครื่องชงกาแฟ"
+      ],
+      "rooms": {
+        "301": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-11"
+        },
+        "302": {
+          "status": "occupied",
+          "guest": "นายจอห์น",
+          "checkin": "2025-01-19",
+          "checkout": "2025-01-25",
+          "last_maintenance": "2025-01-09"
+        },
+        "303": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-20"
+        },
+        "304": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-21"
+        },
+        "305": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-08"
+        }
+      }
+    },
+    "suite": {
+      "price": 2000,
+      "amenities": [
+        "แอร์",
+        "ทีวี LED 55\"",
+        "ตู้เย็น",
+        "ห้องน้ำในตัว",
+        "ระเบียงใหญ่",
+        "เครื่องชงกาแฟ",
+        "ห้องนั่งเล่น",
+        "อ่างอาบน้ำ"
+      ],
+      "rooms": {
+        "401": {
+          "status": "occupied",
+          "guest": "คุณวิภา",
+          "checkin": "2025-01-20",
+          "checkout": "2025-01-26",
+          "last_maintenance": "2025-01-05"
+        },
+        "402": {
+          "status": "available",
+          "guest": null,
+          "checkin": null,
+          "checkout": null,
+          "last_maintenance": "2025-01-07"
+        }
+      }
+    }
+  },
+  "bookings": [],
+  "utilities": {
+    "electricity_rate": 4.5,
+    "water_rate": 18.0,
+    "internet_fee": 100.0,
+    "cleaning_fee": 200.0
+  },
+  "staff": [
+    {
+      "id": 1,
+      "name": "นางสาวสุดา",
+      "position": "แม่บ้าน",
+      "shift": "เช้า",
+      "phone": "081-111-1111"
+    },
+    {
+      "id": 2,
+      "name": "นายสมศักดิ์",
+      "position": "รปภ.",
+      "shift": "กลางคืน",
+      "phone": "081-222-2222"
+    },
+    {
+      "id": 3,
+      "name": "นางสาวนิดา",
+      "position": "แผนกต้อนรับ",
+      "shift": "เช้า",
+      "phone": "081-333-3333"
+    }
+  ]
+}
