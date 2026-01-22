@@ -1,0 +1,4 @@
+requests>=2.31.0
+sqlite3
+requests
+http-server
