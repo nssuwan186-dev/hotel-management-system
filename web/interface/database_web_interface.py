@@ -773,7 +773,7 @@ class DatabaseWebInterface(BaseHTTPRequestHandler):
     
     def serve_tables(self):
         try:
-            conn = sqlite3.connect('/root/projects/hotel-management/data/โรงแรม.db')
+            conn = sqlite3.connect('/root/projects/hotel-management/database/data/โรงแรม.db')
             cursor = conn.cursor()
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
             tables = [row[0] for row in cursor.fetchall()]
@@ -788,7 +788,7 @@ class DatabaseWebInterface(BaseHTTPRequestHandler):
     
     def serve_table_data(self, table_name):
         try:
-            conn = sqlite3.connect('/root/projects/hotel-management/data/โรงแรม.db')
+            conn = sqlite3.connect('/root/projects/hotel-management/database/data/โรงแรม.db')
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             cursor.execute(f"SELECT * FROM `{table_name}`")
@@ -805,7 +805,7 @@ class DatabaseWebInterface(BaseHTTPRequestHandler):
     
     def serve_export_data(self, table_name, format_type):
         try:
-            conn = sqlite3.connect('/root/projects/hotel-management/data/โรงแรม.db')
+            conn = sqlite3.connect('/root/projects/hotel-management/database/data/โรงแรม.db')
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
             cursor.execute(f"SELECT * FROM `{table_name}`")
