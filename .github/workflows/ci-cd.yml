@@ -2,9 +2,9 @@ name: VIPAT ERP CI/CD
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch: # เพิ่มเพื่อให้สั่งรันจาก Git CLI ได้
 
 jobs:
@@ -12,26 +12,26 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.10"
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        if [ -f config/requirements.txt ]; then pip install -r config/requirements.txt; fi
-        pip install requests
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          if [ -f config/requirements.txt ]; then pip install -r config/requirements.txt; fi
 
-    - name: Run Master System Integration Test
-      env:
-        PYTHONPATH: ${{ github.workspace }}
-      run: |
-        python3 scripts/maintenance/master_system_test.py
+      - name: Run Master System Integration Test
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+        run: |
+          python3 scripts/maintenance/master_system_test.py
 
-    - name: Verify Web Interface Build
-      run: |
-        # ตรวจสอบว่าไฟล์หน้าเว็บไม่มี Syntax Error
-        python3 -m py_compile web/interface/database_web_interface_new.py
+      - name: Verify Web Interface Build
+        run: |
+          # ตรวจสอบว่าไฟล์หน้าเว็บไม่มี Syntax Error
+          python3 -m py_compile web/interface/database_web_interface_new.py
