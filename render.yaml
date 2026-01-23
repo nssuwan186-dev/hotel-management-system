@@ -10,10 +10,6 @@ services:
         value: 10000
       - key: PYTHONPATH
         value: .
-    disk:
-      name: erp-db-disk
-      mountPath: /opt/render/project/src/database/data
-      sizeGB: 1
 
   # 2. ส่วนบอท Telegram (Worker)
   - type: worker
@@ -39,7 +35,3 @@ services:
         generateValue: true
       - key: N8N_USER_MANAGEMENT_DISABLED
         value: "false"
-    disk:
-      name: n8n-data-disk
-      mountPath: /home/node/.n8n
-      sizeGB: 1
