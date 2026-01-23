@@ -13,8 +13,29 @@ from database.models.db_access_v2 import (
 
 import os
 
+import threading
+import time
+
 PORT = int(os.environ.get('PORT', 8000))
 DB_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'database', 'data', 'โรงแรม.db')
+
+def start_telegram_bot():
+    """Starts the Telegram bot in a separate thread"""
+    bot_token = os.getenv("TELEGRAM_BOT_TOKEN")
+    if not bot_token or bot_token == "YOUR_BOT_TOKEN_HERE":
+        print("⚠️ TELEGRAM_BOT_TOKEN not set. Bot will not start.")
+        return
+
+    print("🚀 Starting Telegram Bot in background...")
+    try:
+        from bot.core.บอทโรงแรมSQLite import ระบบจัดการโรงแรมSQLite
+        bot = ระบบจัดการโรงแรมSQLite()
+        # Ensure we don't block the main thread
+        bot_thread = threading.Thread(target=bot.เริ่มทำงาน, daemon=True)
+        bot_thread.start()
+        print("✅ Telegram Bot thread started.")
+    except Exception as e:
+        print(f"❌ Failed to start Telegram Bot: {e}")
 
 class DatabaseWebInterface(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
@@ -396,9 +417,12 @@ class DatabaseWebInterface(http.server.BaseHTTPRequestHandler):
 if __name__ == '__main__':
     # กำหนด PYTHONPATH ให้หา Module database เจอ
     import sys
-    import os
     sys.path.append(os.getcwd())
     
+    # Start bot in background
+    start_telegram_bot()
+    
+    print(f"🏨 VIPAT ERP Web Server starting on port {PORT}...")
     with socketserver.TCPServer(("", PORT), DatabaseWebInterface) as httpd:
-        print(f"🚀 VIPAT ERP v2.1 running at http://localhost:{PORT}")
+        print(f"✅ Web Server active and Bot initialized.")
         httpd.serve_forever()
