@@ -23,6 +23,21 @@ services:
     startCommand: python3 bot/core/บอทโรงแรมSQLite.py
     envVars:
       - key: TELEGRAM_BOT_TOKEN
-        sync: false # คุณต้องไปใส่ Token ในหน้า Dashboard ของ Render เองเพื่อความปลอดภัย
+        sync: false
       - key: PYTHONPATH
         value: .
+
+  # 3. ส่วน n8n Automation
+  - type: web
+    name: vipat-hotel-n8n
+    image: n8nio/n8n:latest
+    plan: free
+    envVars:
+      - key: N8N_ENCRYPTION_KEY
+        generateValue: true
+      - key: N8N_USER_MANAGEMENT_DISABLED
+        value: "false"
+    disk:
+      name: n8n-data-disk
+      mountPath: /home/node/.n8n
+      sizeGB: 1
