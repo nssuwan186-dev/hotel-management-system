@@ -30,7 +30,9 @@ services:
   # 3. ส่วน n8n Automation
   - type: web
     name: vipat-hotel-n8n
-    image: n8nio/n8n:latest
+    runtime: image
+    image:
+      url: n8nio/n8n:latest
     plan: free
     envVars:
       - key: N8N_ENCRYPTION_KEY
