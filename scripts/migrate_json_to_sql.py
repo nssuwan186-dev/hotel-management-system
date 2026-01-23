@@ -2,8 +2,8 @@ import json
 import sqlite3
 import os
 
-DB_PATH = os.path.join('database', 'data', 'โรงแรม.db')
-JSON_PATH = os.path.join('database', 'data', 'complete_hotel_data.json')
+DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'database', 'data', 'โรงแรม.db')
+JSON_PATH = os.path.join(os.path.dirname(__file__), '..', 'database', 'data', 'complete_hotel_data.json')
 
 def migrate_data():
     if not os.path.exists(JSON_PATH):

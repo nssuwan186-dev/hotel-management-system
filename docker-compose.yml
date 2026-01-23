@@ -6,7 +6,7 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./database/data:/opt/render/project/src/database/data
+      - ./database/data:/app/database/data
     environment:
       - PORT=8000
       - PYTHONPATH=.

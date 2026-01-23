@@ -14,7 +14,7 @@ from database.models.db_access_v2 import (
 import os
 
 PORT = int(os.environ.get('PORT', 8000))
-DB_PATH = 'database/data/โรงแรม.db'
+DB_PATH = os.path.join(os.path.dirname(__file__), '..', '..', 'database', 'data', 'โรงแรม.db')
 
 class DatabaseWebInterface(http.server.BaseHTTPRequestHandler):
     def do_POST(self):

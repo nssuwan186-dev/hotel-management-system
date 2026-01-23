@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-DB_PATH = os.path.join('database', 'data', 'โรงแรม.db')
+DB_PATH = os.path.join(os.path.dirname(__file__), '..', 'database', 'data', 'โรงแรม.db')
 
 def seed_rooms():
     if not os.path.exists(DB_PATH):
@@ -21,6 +21,14 @@ def seed_rooms():
             วันที่อัพเดท TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    
+    # Robustly add missing columns
+    cursor.execute("PRAGMA table_info(ห้องพัก)")
+    cols = [r[1] for r in cursor.fetchall()]
+    if 'ประเภท' not in cols:
+        cursor.execute("ALTER TABLE ห้องพัก ADD COLUMN ประเภท TEXT")
+    if 'ราคา' not in cols:
+        cursor.execute("ALTER TABLE ห้องพัก ADD COLUMN ราคา REAL")
 
     # Add sample rooms
     rooms = [
