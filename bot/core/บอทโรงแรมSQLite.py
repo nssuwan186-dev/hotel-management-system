@@ -9,8 +9,12 @@ import time
 import sqlite3
 import json
 from datetime import datetime, timedelta
-from database.models.booking_engine import create_booking, check_conflict
-from database.models.db_access import เชื่อมต่อฐานข้อมูล
+from database.models.db_access_v2 import (
+    EnhancedBookingEngine, 
+    FinancialReporting, 
+    get_db_connection,
+    IDGenerator
+)
 
 class ระบบจัดการโรงแรมSQLite:
     def __init__(self):
@@ -26,91 +30,8 @@ class ระบบจัดการโรงแรมSQLite:
         self.user_sessions = {}
         
     def สร้างฐานข้อมูล(self):
-        """สร้างตารางฐานข้อมูล"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        
-        # ตารางผู้เข้าพัก
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS ผู้เข้าพัก (
-                รหัส INTEGER PRIMARY KEY AUTOINCREMENT,
-                ชื่อ TEXT NOT NULL,
-                โทรศัพท์ TEXT,
-                อีเมล TEXT,
-                ห้อง TEXT,
-                วันเช็คอิน DATE,
-                วันเช็คเอาท์ DATE,
-                สถานะ TEXT DEFAULT 'เข้าพัก',
-                วันที่สร้าง TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        
-        # ตารางห้องพัก
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS ห้องพัก (
-                เลขห้อง TEXT PRIMARY KEY,
-                ประเภท TEXT NOT NULL,
-                ราคา INTEGER NOT NULL,
-                สถานะ TEXT DEFAULT 'ว่าง',
-                รหัสผู้เข้าพัก INTEGER,
-                วันที่อัพเดท TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (รหัสผู้เข้าพัก) REFERENCES ผู้เข้าพัก(รหัส)
-            )
-        ''')
-        
-        # ตารางรายการตรวจสอบ
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS รายการตรวจสอบ (
-                รหัส INTEGER PRIMARY KEY AUTOINCREMENT,
-                หัวข้อ TEXT NOT NULL,
-                ประเภท TEXT NOT NULL,
-                สร้างโดย INTEGER,
-                วันที่สร้าง TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                สถานะ TEXT DEFAULT 'กำลังดำเนินการ'
-            )
-        ''')
-        
-        # ตารางงานในรายการตรวจสอบ
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS งานตรวจสอบ (
-                รหัส INTEGER PRIMARY KEY AUTOINCREMENT,
-                รหัสรายการ INTEGER,
-                ชื่องาน TEXT NOT NULL,
-                เสร็จแล้ว BOOLEAN DEFAULT 0,
-                ทำโดย INTEGER,
-                วันที่ทำ TIMESTAMP,
-                FOREIGN KEY (รหัสรายการ) REFERENCES รายการตรวจสอบ(รหัส)
-            )
-        ''')
-        
-        # ตารางข้อเสนอแนะ
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS ข้อเสนอแนะ (
-                รหัส INTEGER PRIMARY KEY AUTOINCREMENT,
-                หัวข้อ TEXT NOT NULL,
-                รายละเอียด TEXT,
-                หมวดหมู่ TEXT,
-                เสนอโดย INTEGER,
-                คะแนนโหวต INTEGER DEFAULT 0,
-                สถานะ TEXT DEFAULT 'รอพิจารณา',
-                วันที่เสนอ TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-            )
-        ''')
-        
-        # ตารางการโหวต
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS การโหวต (
-                รหัส INTEGER PRIMARY KEY AUTOINCREMENT,
-                รหัสข้อเสนอแนะ INTEGER,
-                ผู้โหวต INTEGER,
-                วันที่โหวต TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (รหัสข้อเสนอแนะ) REFERENCES ข้อเสนอแนะ(รหัส)
-            )
-        ''')
-        
-        conn.commit()
-        conn.close()
-        print("✅ สร้างฐานข้อมูล SQLite เรียบร้อย")
+        """ตรวจสอบความพร้อมของฐานข้อมูล (ใช้ upgrade_to_erp_v2.py แทน)"""
+        print("ℹ️ ระบบใช้ฐานข้อมูล ERP v2.0 (SQLite)")
     
     def เพิ่มข้อมูลตัวอย่าง(self):
         """เพิ่มข้อมูลตัวอย่าง"""
@@ -185,32 +106,26 @@ class ระบบจัดการโรงแรมSQLite:
     
     def แสดงแดชบอร์ด(self, chat_id):
         """แสดงแดชบอร์ด"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
-        
-        # สถิติห้องพัก
-        cursor.execute("SELECT COUNT(*) FROM ห้องพัก")
-        จำนวนห้องทั้งหมด = cursor.fetchone()[0]
-        
-        cursor.execute("SELECT COUNT(*) FROM ห้องพัก WHERE สถานะ = 'มีผู้เข้าพัก'")
-        ห้องมีผู้เข้าพัก = cursor.fetchone()[0]
-        
-        cursor.execute("SELECT COUNT(*) FROM ห้องพัก WHERE สถานะ = 'ว่าง'")
-        ห้องว่าง = cursor.fetchone()[0]
-        
-        # สถิติผู้เข้าพัก
-        cursor.execute("SELECT COUNT(*) FROM ผู้เข้าพัก WHERE สถานะ = 'เข้าพัก'")
-        จำนวนผู้เข้าพัก = cursor.fetchone()[0]
-        
-        # สถิติรายการตรวจสอบ
-        cursor.execute("SELECT COUNT(*) FROM รายการตรวจสอบ")
-        จำนวนรายการตรวจสอบ = cursor.fetchone()[0]
-        
-        # สถิติข้อเสนอแนะ
-        cursor.execute("SELECT COUNT(*) FROM ข้อเสนอแนะ")
-        จำนวนข้อเสนอแนะ = cursor.fetchone()[0]
-        
-        conn.close()
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            
+            # สถิติห้องพัก
+            cursor.execute("SELECT COUNT(*) FROM ห้องพัก")
+            จำนวนห้องทั้งหมด = cursor.fetchone()[0] or 1
+            
+            cursor.execute("SELECT COUNT(*) FROM ห้องพัก WHERE สถานะ = 'มีผู้เข้าพัก'")
+            ห้องมีผู้เข้าพัก = cursor.fetchone()[0]
+            
+            cursor.execute("SELECT COUNT(*) FROM ห้องพัก WHERE สถานะ = 'ว่าง'")
+            ห้องว่าง = cursor.fetchone()[0]
+            
+            # สถิติผู้เข้าพัก (ใช้ Data_Bookings แทน)
+            cursor.execute("SELECT COUNT(*) FROM Data_Bookings WHERE status IN ('Confirmed', 'Checked-in')")
+            จำนวนผู้เข้าพัก = cursor.fetchone()[0]
+            
+            # สถิติรายการบัญชี
+            cursor.execute("SELECT COUNT(*) FROM Data_Journal")
+            จำนวนรายการบัญชี = cursor.fetchone()[0]
         
         แดชบอร์ด = f"""🏨 <b>แดชบอร์ดระบบจัดการโรงแรม (SQLite)</b>
 
@@ -219,9 +134,8 @@ class ระบบจัดการโรงแรมSQLite:
 🔴 มีผู้เข้าพัก: {ห้องมีผู้เข้าพัก} ห้อง ({(ห้องมีผู้เข้าพัก/จำนวนห้องทั้งหมด*100):.1f}%)
 🟢 ว่าง: {ห้องว่าง} ห้อง
 
-👥 <b>ผู้เข้าพัก:</b> {จำนวนผู้เข้าพัก} คน
-✅ <b>รายการตรวจสอบ:</b> {จำนวนรายการตรวจสอบ} รายการ
-💡 <b>ข้อเสนอแนะ:</b> {จำนวนข้อเสนอแนะ} รายการ
+👥 <b>ผู้เข้าพัก:</b> {จำนวนผู้เข้าพัก} รายการ
+📒 <b>รายการทางบัญชี:</b> {จำนวนรายการบัญชี} รายการ
 
 💾 <b>ฐานข้อมูล:</b> SQLite
 📅 <b>วันที่:</b> {datetime.now().strftime("%d/%m/%Y %H:%M")}
@@ -231,31 +145,26 @@ class ระบบจัดการโรงแรมSQLite:
         self.ส่งข้อความ(chat_id, แดชบอร์ด, self.เมนูหลัก())
     
     def แสดงรายชื่อผู้เข้าพัก(self, chat_id):
-        """แสดงรายชื่อผู้เข้าพัก"""
-        conn = sqlite3.connect(self.db_path)
-        cursor = conn.cursor()
+        """แสดงรายชื่อการจองปัจจุบัน (จาก ERP)"""
+        with get_db_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT booking_id, customer_id, room_number, check_in, check_out, status
+                FROM Data_Bookings
+                WHERE status NOT IN ('Cancelled', 'Checked-out')
+                ORDER BY created_at DESC
+            ''')
+            bookings = cursor.fetchall()
         
-        cursor.execute('''
-            SELECT รหัส, ชื่อ, โทรศัพท์, ห้อง, วันเช็คอิน, วันเช็คเอาท์, สถานะ
-            FROM ผู้เข้าพัก
-            WHERE สถานะ = 'เข้าพัก'
-            ORDER BY รหัส
-        ''')
-        
-        ผู้เข้าพัก = cursor.fetchall()
-        conn.close()
-        
-        if not ผู้เข้าพัก:
-            self.ส่งข้อความ(chat_id, "👥 <b>ไม่มีผู้เข้าพักในระบบ</b>")
+        if not bookings:
+            self.ส่งข้อความ(chat_id, "👥 <b>ไม่มีการเข้าพักที่กำลังดำเนินการในระบบ</b>")
             return
         
-        ข้อความ = "👥 <b>รายชื่อผู้เข้าพัก (จาก SQLite)</b>\n\n"
-        
-        for รหัส, ชื่อ, โทรศัพท์, ห้อง, เช็คอิน, เช็คเอาท์, สถานะ in ผู้เข้าพัก:
-            ข้อความ += f"🆔 <b>{รหัส}</b> - {ชื่อ}\n"
-            ข้อความ += f"   📞 {โทรศัพท์}\n"
-            ข้อความ += f"   🏠 ห้อง: {ห้อง}\n"
-            ข้อความ += f"   📅 {เช็คอิน} → {เช็คเอาท์}\n\n"
+        ข้อความ = "👥 <b>รายชื่อการจอง (ERP v2.0)</b>\n\n"
+        for bid, cid, rno, ci, co, status in bookings:
+            ข้อความ += f"🆔 <b>{bid}</b> - {cid}\n"
+            ข้อความ += f"   🏠 ห้อง: {rno} | 📋 สถานะ: {status}\n"
+            ข้อความ += f"   📅 {ci} → {co}\n\n"
         
         self.ส่งข้อความ(chat_id, ข้อความ)
     
@@ -539,8 +448,8 @@ class ระบบจัดการโรงแรมSQLite:
         data = session["data"]
         
         # เรียกใช้ ERP Engine (เช็ค Conflict + บันทึกบัญชีอัตโนมัติ)
-        result = create_booking(
-            customer_id=f"TG-{chat_id}", 
+        result = EnhancedBookingEngine.create_booking(
+            customer_name=data['ชื่อ'], 
             room_number=data['ห้อง'], 
             check_in=data['วันเช็คอิน'], 
             check_out=data['วันเช็คเอาท์'], 
@@ -567,48 +476,40 @@ class ระบบจัดการโรงแรมSQLite:
                 del self.user_sessions[chat_id]
     
     def แสดงรายงานการเงิน(self, chat_id):
-        """แสดงรายงานการเงินสรุปยอดรายได้-ค่าใช้จ่าย"""
-        conn = เชื่อมต่อฐานข้อมูล()
-        cursor = conn.cursor()
-        
-        # 1. ยอดเงินคงเหลือในธนาคาร (1020)
-        cursor.execute("SELECT SUM(debit - credit) FROM Data_JournalEntries WHERE account_code = '1020'")
-        cash_balance = cursor.fetchone()[0] or 0
-        
-        # 2. ยอดรายได้สะสม (หมวด 4)
-        cursor.execute('''
-            SELECT SUM(e.credit - e.debit) 
-            FROM Data_JournalEntries e
-            JOIN Data_ChartOfAccounts c ON e.account_code = c.account_code
-            WHERE c.category = 'Revenue'
-        ''')
-        total_revenue = cursor.fetchone()[0] or 0
-        
-        # 3. ยอดเงินมัดจำค้างจ่าย (Liabilities 2050)
-        cursor.execute("SELECT SUM(credit - debit) FROM Data_JournalEntries WHERE account_code = '2050'")
-        total_deposits = cursor.fetchone()[0] or 0
-        
-        # 4. รายการล่าสุด 5 รายการ
-        cursor.execute('''
-            SELECT j.description, e.debit, e.credit, c.account_name
-            FROM Data_Journal j
-            JOIN Data_JournalEntries e ON j.journal_id = e.journal_id
-            JOIN Data_ChartOfAccounts c ON e.account_code = c.account_code
-            ORDER BY j.transaction_date DESC LIMIT 5
-        ''')
-        recent_entries = cursor.fetchall()
-        
-        conn.close()
-        
-        msg = f"""📊 <b>รายงานการเงิน (Real-time ERP)</b>
+        """แสดงรายงานการเงินสรุปยอดรายจาก FinancialReporting"""
+        with get_db_connection() as conn:
+            tb = FinancialReporting.get_trial_balance(conn)
+            
+            # หาค่าจาก Trial Balance
+            cash_balance = 0
+            revenue = 0
+            deposits = 0
+            
+            for row in tb:
+                if row['account_code'] == '1020': cash_balance = row['balance']
+                if row['category'] == 'Revenue': revenue += (row['total_credit'] - row['total_debit'])
+                if row['account_code'] == '2050': deposits = (row['total_credit'] - row['total_debit'])
 
-💰 <b>ยอดเงินสดในระบบ:</b> {cash_balance:,.2f} ฿
-📥 <b>รายได้สะสม:</b> {total_revenue:,.2f} ฿
-⏳ <b>เงินมัดจำค้างอยู่:</b> {total_deposits:,.2f} ฿
+            # รายการล่าสุด 5 รายการ
+            cursor = conn.cursor()
+            cursor.execute('''
+                SELECT j.description, e.debit, e.credit, c.account_name
+                FROM Data_Journal j
+                JOIN Data_JournalEntries e ON j.journal_id = e.journal_id
+                JOIN Data_ChartOfAccounts c ON e.account_code = c.account_code
+                ORDER BY j.created_at DESC LIMIT 5
+            ''')
+            recent_entries = cursor.fetchall()
+        
+        msg = f"""📊 <b>รายงานการเงิน (VIPAT ERP v2.0)</b>
+        
+💰 <b>เงินสด (1020):</b> {cash_balance:,.2f} ฿
+📥 <b>รายได้รวม:</b> {revenue:,.2f} ฿
+⏳ <b>มัดจำค้างจ่าย (2050):</b> {deposits:,.2f} ฿
 
 --------------------------------
-📝 <b>รายการบัญชีล่าสุด:</b>\n"""
-        
+📝 <b>รายการล่าสุด:</b>\n"""
+
         for desc, dr, cr, acc_name in recent_entries:
             amount = dr if dr > 0 else cr
             type_label = "Dr" if dr > 0 else "Cr"

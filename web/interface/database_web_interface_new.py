@@ -4,7 +4,7 @@ import socketserver
 import json
 import sqlite3
 from urllib.parse import urlparse, parse_qs
-from database.models.booking_engine import create_booking, check_conflict
+from database.models.db_access_v2 import EnhancedBookingEngine
 
 import os
 
@@ -19,8 +19,8 @@ class DatabaseWebInterface(http.server.BaseHTTPRequestHandler):
             post_data = self.rfile.read(content_length)
             params = json.loads(post_data.decode('utf-8'))
             
-            result = create_booking(
-                customer_id=params.get('customer_name'),
+            result = EnhancedBookingEngine.create_booking(
+                customer_name=params.get('customer_name'),
                 room_number=params.get('room_number'),
                 check_in=params.get('check_in'),
                 check_out=params.get('check_out'),

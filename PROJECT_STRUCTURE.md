@@ -2,7 +2,6 @@
 
 ## 📁 Project Organization
 
-```
 hotel-management/
 ├── 🤖 bot/                    # Telegram Bot Components
 │   ├── core/                  # Core bot functionality
@@ -56,6 +55,7 @@ hotel-management/
 │
 ├── .gitignore                 # Git ignore rules
 └── Procfile                   # Process definitions
+
 ```
 
 ## 🎯 Component Descriptions
