@@ -103,6 +103,13 @@ class AccountingEngine:
                 {"account": "4010", "type": "credit", "amount_formula": "main / 1.07"},
                 {"account": "2030", "type": "credit", "amount_formula": "main - (main / 1.07)"}
             ]
+        },
+        "utility_income": {
+            "description": "รายได้ค่าสาธารณูปโภค (ไฟ/น้ำ)",
+            "entries": [
+                {"account": "1020", "type": "debit"},
+                {"account": "4020", "type": "credit"}
+            ]
         }
     }
     
@@ -237,6 +244,45 @@ class FinancialReporting:
             "net_profit": net_profit,
             "profit_margin": (net_profit / revenue * 100) if revenue > 0 else 0
         }
+
+class HospitalityOperations:
+    @staticmethod
+    def calculate_utilities(room_number: str, electricity_old: float, electricity_new: float, water_old: float, water_new: float, electricity_rate: float = 8.0, water_rate: float = 20.0) -> Dict:
+        """
+        คำนวณค่าไฟน้ำและบันทึกบัญชีรายได้
+        """
+        try:
+            elec_unit = electricity_new - electricity_old
+            water_unit = water_new - water_old
+            
+            if elec_unit < 0 or water_unit < 0:
+                return {"success": False, "message": "ค่าใหม่ต้องไม่น้อยกว่าค่าเก่า"}
+            
+            elec_price = elec_unit * electricity_rate
+            water_price = water_unit * water_rate
+            total = elec_price + water_price
+            
+            with get_db_connection() as conn:
+                journal_id = AccountingEngine.create_journal_entry(
+                    conn=conn,
+                    template_name="utility_income",
+                    amount=total,
+                    reference_id=f"UTIL-{room_number}",
+                    additional_description=f"ค่าไฟ {elec_unit}u, ค่าน้ำ {water_unit}u ห้อง {room_number}"
+                )
+                
+            return {
+                "success": True,
+                "data": {
+                    "room": room_number,
+                    "units": {"elec": elec_unit, "water": water_unit},
+                    "prices": {"elec": elec_price, "water": water_price},
+                    "total": total,
+                    "journal_id": journal_id
+                }
+            }
+        except Exception as e:
+            return {"success": False, "message": str(e)}
 
 if __name__ == "__main__":
     print("VIPAT ERP Core Engine v2.0 Integrated")

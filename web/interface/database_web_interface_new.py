@@ -4,7 +4,12 @@ import socketserver
 import json
 import sqlite3
 from urllib.parse import urlparse, parse_qs
-from database.models.db_access_v2 import EnhancedBookingEngine
+from database.models.db_access_v2 import (
+    EnhancedBookingEngine, 
+    HospitalityOperations, 
+    FinancialReporting,
+    get_db_connection
+)
 
 import os
 
@@ -26,6 +31,21 @@ class DatabaseWebInterface(http.server.BaseHTTPRequestHandler):
                 check_out=params.get('check_out'),
                 total_price=float(params.get('total_price', 0))
             )
+            self.send_json(result)
+
+        elif self.path == '/api/calculate_utilities':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            params = json.loads(post_data.decode('utf-8'))
+            
+            result = HospitalityOperations.calculate_utilities(
+                room_number=params.get('room', params.get('ห้อง', '')),
+                electricity_old=float(params.get('elec_old', params.get('ไฟเก่า', 0))),
+                electricity_new=float(params.get('elec_new', params.get('ไฟใหม่', 0))),
+                water_old=float(params.get('water_old', params.get('น้ำเก่า', 0))),
+                water_new=float(params.get('water_new', params.get('น้ำใหม่', 0)))
+            )
+            self.send_json(result)
             
             self.send_response(200)
             self.send_header('Content-type', 'application/json')
@@ -41,6 +61,14 @@ class DatabaseWebInterface(http.server.BaseHTTPRequestHandler):
             self.serve_accounting()
         elif self.path == '/api/rooms':
             self.serve_rooms()
+        elif self.path == '/api/income_statement':
+            with get_db_connection() as conn:
+                report = FinancialReporting.get_income_statement(conn)
+                self.send_json(report)
+        elif self.path == '/api/trial_balance':
+            with get_db_connection() as conn:
+                tb = FinancialReporting.get_trial_balance(conn)
+                self.send_json(tb)
         else:
             self.send_error(404)
 

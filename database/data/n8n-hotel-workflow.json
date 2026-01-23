@@ -12,7 +12,10 @@
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [240, 300]
+      "position": [
+        240,
+        300
+      ]
     },
     {
       "parameters": {
@@ -30,7 +33,10 @@
       "name": "ตรวจสอบคำสั่งจอง",
       "type": "n8n-nodes-base.if",
       "typeVersion": 1,
-      "position": [460, 300]
+      "position": [
+        460,
+        300
+      ]
     },
     {
       "parameters": {
@@ -47,11 +53,14 @@
       "id": "if-utilities",
       "name": "ตรวจสอบค่าสาธารณูปโภค",
       "typeVersion": 1,
-      "position": [460, 500]
+      "position": [
+        460,
+        500
+      ]
     },
     {
       "parameters": {
-        "url": "YOUR_GOOGLE_APPS_SCRIPT_URL",
+        "url": "http://localhost:8000/api/create_booking",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"action\": \"generate_id\",\n  \"type\": \"booking\"\n}",
@@ -61,11 +70,14 @@
       "name": "สร้างการจอง",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [680, 200]
+      "position": [
+        680,
+        200
+      ]
     },
     {
       "parameters": {
-        "url": "YOUR_GOOGLE_APPS_SCRIPT_URL",
+        "url": "http://localhost:8000/api/calculate_utilities",
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={\n  \"action\": \"calculate_utilities\",\n  \"ไฟเก่า\": {{$json.ไฟเก่า}},\n  \"ไฟใหม่\": {{$json.ไฟใหม่}},\n  \"น้ำเก่า\": {{$json.น้ำเก่า}},\n  \"น้ำใหม่\": {{$json.น้ำใหม่}}\n}",
@@ -75,7 +87,10 @@
       "name": "คำนวณค่าไฟน้ำ",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 3,
-      "position": [680, 500]
+      "position": [
+        680,
+        500
+      ]
     },
     {
       "parameters": {
@@ -86,7 +101,10 @@
       "name": "ตอบกลับการจอง",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
-      "position": [900, 200]
+      "position": [
+        900,
+        200
+      ]
     },
     {
       "parameters": {
@@ -97,7 +115,10 @@
       "name": "ตอบกลับค่าไฟน้ำ",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1,
-      "position": [900, 500]
+      "position": [
+        900,
+        500
+      ]
     },
     {
       "parameters": {
@@ -108,7 +129,10 @@
       "name": "Response",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1120, 300]
+      "position": [
+        1120,
+        300
+      ]
     }
   ],
   "connections": {
